@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>晨晞電腦｜分期試算總覽</title>
+<style>
+  body{
+    font-family: Arial, sans-serif;
+    background:#f5f7fa;
+    padding:20px;
+    margin:0;
+    color:#111;
+  }
+  .wrap{ max-width: 1100px; margin: 0 auto; }
+
+  /* Brand header */
+  .brand {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    padding:14px 16px;
+    background:#111;
+    border-radius:14px;
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+    margin-bottom:16px;
+  }
+  .brand-left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    min-width:0;
+  }
+  .brand img{
+    height:56px;
+    width:auto;
+    border-radius:10px;
+    display:block;
+    background:#000;
+  }
+  .brand-title{
+    color:#fff;
+    font-weight:800;
+    font-size:18px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .brand-sub{
+    color:#cbd5e1;
+    font-size:12px;
+    margin-top:2px;
+  }
+  .brand-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .btn{
+    border:0;
+    border-radius:10px;
+    padding:10px 12px;
+    font-size:14px;
+    cursor:pointer;
+    background:#2563eb;
+    color:#fff;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn.secondary{ background:#334155; }
+  .btn.ghost{
+    background: transparent;
+    border:1px solid rgba(255,255,255,.25);
+  }
+
+  .input-area{
+    display:flex;
+    gap:10px;
+    align-items:center;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin: 14px 0 20px;
+  }
+  input{
+    padding:10px 12px;
+    font-size:16px;
+    width:220px;
+    border-radius:10px;
+    border:1px solid #cbd5e1;
+    outline:none;
+  }
+  .hint{
+    text-align:center;
+    font-size:13px;
+    color:#475569;
+    margin-bottom: 10px;
+  }
+
+  .cards{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .card{
+    background:#fff;
+    border-radius:14px;
+    width:520px;
+    box-shadow:0 6px 16px rgba(0,0,0,0.08);
+    overflow:hidden;
+  }
+  .card-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:14px 16px;
+    background:#eef2f7;
+  }
+  .card-header a{
+    font-size:16px;
+    font-weight:800;
+    color:#0f172a;
+    text-decoration:none;
+  }
+  .card-header a:hover{ text-decoration:underline; }
+  .card-header .small-actions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .small-actions button{
+    padding:8px 10px;
+    font-size:13px;
+    border-radius:10px;
+  }
+
+  table{ width:100%; border-collapse:collapse; }
+  th, td{
+    padding:10px 10px;
+    border-bottom:1px solid #eef2f7;
+    text-align:right;
+    font-size:14px;
+  }
+  th{
+    background:#fafafa;
+    font-size:13px;
+    color:#334155;
+  }
+  td:first-child, th:first-child{ text-align:center; }
+  td:last-child, th:last-child{ text-align:center; width:110px; }
+
+  .highlight{ background:#fff8e1; font-weight:800; }
+
+  .copy-btn{
+    border:0;
+    background:#0ea5e9;
+    color:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+    cursor:pointer;
+    font-size:13px;
+    white-space:nowrap;
+  }
+  .copy-btn.secondary{ background:#64748b; }
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:18px;
+    transform:translateX(-50%);
+    background:#111;
+    color:#fff;
+    padding:10px 14px;
+    border-radius:999px;
+    font-size:13px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .toast.show{ opacity:1; }
+
+  @media (max-width: 600px){
+    .card{ width: 100%; }
+    input{ width: 100%; max-width: 320px; }
+    .brand{ flex-direction:column; align-items:stretch; }
+    .brand-actions{ justify-content:stretch; }
+    .brand-actions .btn{ width:100%; }
+  }
+/* 右下角浮水印簽名 */
+.signature-wrap{
+  position: fixed;
+  right: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;          /* 整體透明度（關鍵） */
+  pointer-events: none;  /* 不影響點擊 */
+  user-select: none;     /* 不可選取 */
+  z-index: 999;
+}
+
+.signature-wrap img{
+  width: 36px;
+  height: auto;
+  filter: grayscale(100%); /* 變成灰階更像浮水印 */
+}
+
+.signature-text{
+  font-size: 12px;
+  line-height: 1.35;
+  text-align: right;
+  color: #000;
+  white-space: nowrap;
+}
+
+.signature-text .version{
+  font-size: 11px;
+}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 你的品牌區（把 brand-logo.jpg 放在同資料夾即可顯示） -->
+  <div class="brand">
+    <div class="brand-left">
+      <img src="brand-logo.jpg" alt="晨晞電腦 Logo">
+      <div>
+        <div class="brand-title">晨晞電腦｜分期試算總覽</div>
+        <div class="brand-sub">輸入金額後，一次攤開各平台所有期數，並可一鍵複製報價</div>
+      </div>
+    </div>
+    <div class="brand-actions">
+      <button class="btn secondary" onclick="copyAllQuotes()">📋 複製全部報價</button>
+      <button class="btn ghost" onclick="scrollToTop()">⬆️ 回到上方</button>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <span style="font-weight:800;">金額：</span>
+    <input type="number" id="price" placeholder="輸入金額（例如 30000）">
+    <button class="btn" onclick="calculate()">計算</button>
+  </div>
+  <div class="hint">提示：6 / 12 / 24 期已特別標示，右側按 📋 可直接複製該期報價文字。</div>
+
+  <div class="cards" id="output"></div>
+
+</div>
+
+<div class="toast" id="toast">已複製</div>
+
+<script>
+const data = {
+  "綠界科技": {
+    link: "https://vendor.ecpay.com.tw/User/LogOn_Step1",
+    rates: { 1: 0.03, 3: 0.035, 6: 0.05, 12: 0.08, 18: 0.12, 24: 0.14 }
+  },
+  "銀角分期": {
+    link: "https://www.ezfund.com.tw/EC0card/Home/Login?url=/EC0card",
+    rates: { 6: 0.0425, 9: 0.06, 12: 0.075, 18: 0.11, 24: 0.14 }
+  }
+};
+
+function fmt(n){
+  // 四捨五入 + 千分位
+  const v = Math.round(Number(n));
+  return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function fmtRate(r){
+  // 顯示百分比，最多兩位小數（4.25% 這種）
+  return (r * 100).toFixed(2).replace(/\.00$/, "") + "%";
+}
+function periodLabel(p){
+  return (Number(p) === 1) ? "一次付清" : `${p}期`;
+}
+
+function showToast(msg="已複製"){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), 1200);
+}
+
+async function copyText(text){
+  try{
+    await navigator.clipboard.writeText(text);
+    showToast("✅ 已複製到剪貼簿");
+  }catch(e){
+    // fallback
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand("copy");
+    document.body.removeChild(ta);
+    showToast("✅ 已複製到剪貼簿");
+  }
+}
+
+function buildRowQuote({price, platform, period, rate, total, per}){
+  const pLabel = periodLabel(period);
+  // 你可以自由改成你門市習慣的文字格式
+  return [
+    `【晨晞電腦 分期報價】`,
+    `平台：${platform}`,
+    `方案：${pLabel}（手續費 ${fmtRate(rate)}）`,
+    `原價：$${fmt(price)}`,
+    `分期總價：$${fmt(total)}`,
+    `每期：約 $${fmt(per)}`,
+  ].join("\n");
+}
+
+function buildPlatformQuote({price, platform, rates}){
+  let lines = [];
+  lines.push(`【晨晞電腦 分期報價】`);
+  lines.push(`平台：${platform}`);
+  lines.push(`原價：$${fmt(price)}`);
+  lines.push(`----------------------`);
+  for (const period in rates){
+    const rate = rates[period];
+    const total = price * (1 + rate);
+    const per = (Number(period) === 1) ? total : total / Number(period);
+    lines.push(`${periodLabel(period)}｜手續費 ${fmtRate(rate)}｜總價 $${fmt(total)}｜每期 $${fmt(per)}`);
+  }
+  return lines.join("\n");
+}
+
+function calculate(){
+  const price = Number(document.getElementById("price").value);
+  if (!price || price <= 0){
+    showToast("請先輸入金額");
+    return;
+  }
+
+  let html = "";
+
+  for (const platform in data){
+    const { link, rates } = data[platform];
+
+    html += `
+      <div class="card">
+        <div class="card-header">
+          <a href="${link}" target="_blank">🔗 ${platform}（點我登入）</a>
+          <div class="small-actions">
+            <button class="btn secondary" onclick="copyPlatform('${platform}')">📋 複製平台報價</button>
+          </div>
+        </div>
+
+        <table>
+          <tr>
+            <th>期數</th>
+            <th>手續費</th>
+            <th>總價</th>
+            <th>每期</th>
+            <th>複製</th>
+          </tr>
+    `;
+
+    for (const period in rates){
+      const rate = rates[period];
+      const total = price * (1 + rate);
+      const per = (Number(period) === 1) ? total : total / Number(period);
+      const highlight = [6,12,24].includes(Number(period)) ? "highlight" : "";
+
+      const quote = buildRowQuote({ price, platform, period, rate, total, per })
+        .replaceAll("\n", "\\n")
+        .replaceAll("'", "\\'");
+
+      html += `
+        <tr class="${highlight}">
+          <td>${periodLabel(period)}</td>
+          <td>${fmtRate(rate)}</td>
+          <td>$${fmt(total)}</td>
+          <td>$${fmt(per)}</td>
+          <td>
+            <button class="copy-btn" onclick="copyText('${quote}')">📋 複製</button>
+          </td>
+        </tr>
+      `;
+    }
+
+    html += `
+        </table>
+      </div>
+    `;
+  }
+
+  document.getElementById("output").innerHTML = html;
+}
+
+function copyPlatform(platform){
+  const price = Number(document.getElementById("price").value);
+  if (!price || price <= 0){
+    showToast("請先輸入金額");
+    return;
+  }
+  const text = buildPlatformQuote({ price, platform, rates: data[platform].rates });
+  copyText(text);
+}
+
+function copyAllQuotes(){
+  const price = Number(document.getElementById("price").value);
+  if (!price || price <= 0){
+    showToast("請先輸入金額");
+    return;
+  }
+  let blocks = [];
+  for (const platform in data){
+    blocks.push(buildPlatformQuote({ price, platform, rates: data[platform].rates }));
+    blocks.push(""); // 空行分隔
+  }
+  copyText(blocks.join("\n"));
+}
+
+function scrollToTop(){ window.scrollTo({top:0, behavior:"smooth"}); }
+</script>
+
+<div class="signature-wrap">
+  <img src="brand-logo.jpg" alt="晨晞電腦 Logo">
+  <div class="signature-text">
+    晨晞電腦_熊專業國際資訊有限公司
+ ©<br>
+    規格透明，價格清楚<br>
+    <span class="version">v1.0.0</span>
+  </div>
+</div>
+</body>
+</html>
